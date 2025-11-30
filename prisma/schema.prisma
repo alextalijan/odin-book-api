@@ -21,6 +21,7 @@ model User {
   followers        Following[]     @relation("followed")
   sentRequests     FollowRequest[] @relation("sentRequest")
   incomingRequests FollowRequest[] @relation("incomingRequest")
+  posts            Post[]
 }
 
 model Following {
@@ -46,4 +47,11 @@ model FollowRequest {
   receiverId String
   status     RequestStatus @default(pending)
   sentAt     DateTime      @default(now())
+}
+
+model Post {
+  id       String @id @default(uuid())
+  text     String
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
 }
