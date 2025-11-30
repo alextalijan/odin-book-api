@@ -7,7 +7,7 @@
     "prisma": "6.19"
   },
   "dependencies": {
-    "@prisma/client": "^7.0.1",
+    "@prisma/client": "6.19",
     "express": "^5.1.0"
   }
 }
