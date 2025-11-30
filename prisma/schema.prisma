@@ -12,3 +12,38 @@ datasource db {
   provider = "postgresql"
   url      = env("DEVELOPMENT_DATABASE_URL")
 }
+
+model User {
+  id               String          @id @default(uuid())
+  username         String          @unique
+  hash             String
+  following        Following[]     @relation("following")
+  followers        Following[]     @relation("followed")
+  sentRequests     FollowRequest[] @relation("sentRequest")
+  incomingRequests FollowRequest[] @relation("incomingRequest")
+}
+
+model Following {
+  id         String @id @default(uuid())
+  follower   User   @relation("following", fields: [followerId], references: [id])
+  followed   User   @relation("followed", fields: [followedId], references: [id])
+  followerId String
+  followedId String
+}
+
+enum RequestStatus {
+  pending
+  accepted
+  rejected
+  canceled
+}
+
+model FollowRequest {
+  id         String        @id @default(uuid())
+  sender     User          @relation("sentRequest", fields: [senderId], references: [id])
+  senderId   String
+  receiver   User          @relation("incomingRequest", fields: [receiverId], references: [id])
+  receiverId String
+  status     RequestStatus @default(pending)
+  sentAt     DateTime      @default(now())
+}
