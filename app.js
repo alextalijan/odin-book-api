@@ -1,7 +1,14 @@
 const express = require('express');
+const cors = require('cors');
 
 const app = express();
 const PORT = 3000;
+
+// Set up cors
+app.use(cors());
+
+// Set up json parsing from incoming requests
+app.use(express.json());
 
 // Import routers
 const userRouter = require('./routes/userRouter');
