@@ -76,14 +76,12 @@ module.exports = {
 
     // If the token doesn't exist, inform the client
     if (!token) {
-      console.error('Token does not exist.');
       return res.json({ success: false });
     }
 
     // Verify jwt token
     jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
       if (err) {
-        console.error(err.message);
         return res.json({ success: false });
       }
 
