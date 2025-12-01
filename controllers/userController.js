@@ -53,9 +53,13 @@ module.exports = {
     });
 
     // Create json web token
-    const token = jwt.sign({ ...registeredUser }, process.env.JWT_SECRET, {
-      expiresIn: '1d',
-    });
+    const token = jwt.sign(
+      { sub: { ...registeredUser } },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '1d',
+      }
+    );
 
     // Set the token inside a cookie
     res.cookie('jwt', token, {
@@ -65,5 +69,25 @@ module.exports = {
     });
 
     res.json({ success: true, user: registeredUser });
+  },
+  returnUser: async (req, res) => {
+    // Capture the token in a variable
+    const token = req.cookies.jwt;
+
+    // If the token doesn't exist, inform the client
+    if (!token) {
+      console.error('Token does not exist.');
+      return res.json({ success: false });
+    }
+
+    // Verify jwt token
+    jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
+      if (err) {
+        console.error(err.message);
+        return res.json({ success: false });
+      }
+
+      res.json({ success: true, user: decoded.sub });
+    });
   },
 };
