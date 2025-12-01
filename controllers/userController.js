@@ -57,6 +57,6 @@ module.exports = {
       maxAge: 24 * 60 * 60 * 1000,
     });
 
-    res.json({ success: true, message: 'Registered successfully.' });
+    res.json({ success: true, user: registeredUser });
   },
 };
