@@ -6,9 +6,16 @@ require('dotenv').config();
 
 module.exports = {
   register: async (req, res) => {
+    // Check if username is empty
+    if (req.body.username === '') {
+      return res.json({ success: false, message: 'Username cannot be empty.' });
+    }
+
     // Check if username already exists
     const user = await prisma.user.findUnique({
-      username: req.body.username.trim().toLowerCase(),
+      where: {
+        username: req.body.username.trim().toLowerCase(),
+      },
     });
     if (user) {
       return res.json({ success: false, message: 'Username already in use.' });
