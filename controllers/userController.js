@@ -50,6 +50,13 @@ module.exports = {
       expiresIn: '1d',
     });
 
-    res.json({ success: true, token });
+    // Set the token inside a cookie
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: process.env.DEVELOPMENT === 'true' ? false : true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    res.json({ success: true, message: 'Registered successfully.' });
   },
 };
