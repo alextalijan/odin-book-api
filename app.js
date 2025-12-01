@@ -6,7 +6,12 @@ const app = express();
 const PORT = 3000;
 
 // Set up cors
-app.use(cors());
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  })
+);
 
 // Set up cookie parser for incoming requests
 app.use(cookieParser());
