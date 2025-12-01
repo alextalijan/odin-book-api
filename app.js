@@ -1,11 +1,15 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = 3000;
 
 // Set up cors
 app.use(cors());
+
+// Set up cookie parser for incoming requests
+app.use(cookieParser());
 
 // Set up json parsing from incoming requests
 app.use(express.json());
