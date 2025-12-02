@@ -48,4 +48,11 @@ module.exports = {
       user: { id: user.id, username: user.username },
     });
   },
+  logout: (req, res) => {
+    res.clearCookie('jwt', {
+      httpOnly: true,
+      secure: process.env.DEVELOPMENT === 'true' ? false : true,
+    });
+    res.json({ success: true, message: 'Logged out.' });
+  },
 };
