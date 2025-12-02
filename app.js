@@ -20,9 +20,11 @@ app.use(cookieParser());
 app.use(express.json());
 
 // Import routers
+const indexRouter = require('./routes/indexRouter');
 const userRouter = require('./routes/userRouter');
 
 // Set up routers
+app.use('/', indexRouter);
 app.use('/users', userRouter);
 
 app.listen(PORT, (err) => {
