@@ -58,6 +58,7 @@ model Post {
   authorId String
   likes    Like[]
   comments Comment[]
+  postedAt DateTime  @default(now())
 }
 
 model Like {
@@ -70,10 +71,11 @@ model Like {
 }
 
 model Comment {
-  id       String @id @default(uuid())
-  text     String
-  author   User   @relation(fields: [authorId], references: [id])
-  authorId String
-  post     Post   @relation(fields: [postId], references: [id])
-  postId   String
+  id          String   @id @default(uuid())
+  text        String
+  author      User     @relation(fields: [authorId], references: [id])
+  authorId    String
+  post        Post     @relation(fields: [postId], references: [id])
+  postId      String
+  commentedAt DateTime @default(now())
 }
