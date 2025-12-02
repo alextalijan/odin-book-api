@@ -71,21 +71,60 @@ module.exports = {
     res.json({ success: true, user: registeredUser });
   },
   returnUser: async (req, res) => {
-    // Capture the token in a variable
-    const token = req.cookies.jwt;
-
-    // If the token doesn't exist, inform the client
-    if (!token) {
-      return res.json({ success: false });
+    res.json({ success: true, user: req.user });
+  },
+  getFeed: async (req, res) => {
+    // Check if the user has access to these followings
+    if (req.user.id !== req.params.userId) {
+      return res.json({
+        success: false,
+        message: 'Not authorized to see these posts.',
+      });
     }
 
-    // Verify jwt token
-    jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
-      if (err) {
-        return res.json({ success: false });
-      }
-
-      res.json({ success: true, user: decoded.sub });
+    // Get the list of all followings
+    const followings = await prisma.following.findMany({
+      where: {
+        followerId: req.params.userId,
+      },
+      select: {
+        followedId: true,
+      },
     });
+
+    // Filter their ids and add the user himself
+    const followedIds = [
+      ...followings.map((following) => following.followedId),
+      req.params.userId,
+    ];
+
+    // Fetch posts and relevant information
+    const posts = await prisma.post.findMany({
+      where: {
+        authorId: {
+          in: followedIds,
+        },
+      },
+      select: {
+        text: true,
+        author: {
+          select: {
+            username: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+      },
+      orderBy: {
+        postedAt: 'desc',
+      },
+      take: 20 * parseInt(req.query.page),
+    });
+
+    res.json({ success: true, posts });
   },
 };
