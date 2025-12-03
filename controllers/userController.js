@@ -118,6 +118,7 @@ module.exports = {
             comments: true,
           },
         },
+        postedAt: true,
       },
       orderBy: {
         postedAt: 'desc',
