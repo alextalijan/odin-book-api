@@ -119,6 +119,21 @@ module.exports = {
           },
         },
         postedAt: true,
+        comments: {
+          select: {
+            id: true,
+            text: true,
+            author: {
+              select: {
+                username: true,
+              },
+            },
+          },
+          orderBy: {
+            commentedAt: 'desc',
+          },
+          take: 3,
+        },
       },
       orderBy: {
         postedAt: 'desc',
