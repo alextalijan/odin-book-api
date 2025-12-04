@@ -22,10 +22,12 @@ app.use(express.json());
 // Import routers
 const indexRouter = require('./routes/indexRouter');
 const userRouter = require('./routes/userRouter');
+const postRouter = require('./routes/postRouter');
 
 // Set up routers
 app.use('/', indexRouter);
 app.use('/users', userRouter);
+app.use('/posts', postRouter);
 
 app.listen(PORT, (err) => {
   if (err) {

@@ -39,13 +39,28 @@ async function main() {
     });
 
     // Create fake post
-    await prisma.post.create({
+    const post = await prisma.post.create({
       data: {
         text: `This is the first post made by ${user.username}.`,
         authorId: user.id,
         postedAt: faker.date.past(),
       },
+      select: {
+        id: true,
+      },
     });
+
+    // Add fake comments
+    const numComments = Math.floor(Math.random() * 7);
+    for (let i = 0; i < numComments; i++) {
+      await prisma.comment.create({
+        data: {
+          text: `This is a random comment number ${i}`,
+          postId: post.id,
+          authorId: i < 4 ? users[i].id : alex.id,
+        },
+      });
+    }
 
     // Set alex to follow them
     await prisma.following.create({
