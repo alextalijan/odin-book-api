@@ -19,6 +19,7 @@ module.exports = {
         },
         comments: {
           select: {
+            id: true,
             text: true,
             author: {
               select: {
@@ -35,6 +36,11 @@ module.exports = {
           select: {
             likes: true,
             comments: true,
+          },
+        },
+        likes: {
+          where: {
+            userId: req.user.id,
           },
         },
         postedAt: true,
@@ -58,8 +64,14 @@ module.exports = {
       });
     }
 
+    // Add isLiked by user field
+    const postInfo = {
+      ...post,
+      isLiked: post.likes.length > 0 ? true : false,
+    };
+
     // Return the post details
-    res.json({ success: true, post });
+    res.json({ success: true, post: postInfo });
   },
   likePost: async (req, res) => {
     // Check if the post exists
