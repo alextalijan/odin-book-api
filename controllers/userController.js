@@ -106,6 +106,7 @@ module.exports = {
         },
       },
       select: {
+        id: true,
         text: true,
         author: {
           select: {
@@ -117,6 +118,12 @@ module.exports = {
             likes: true,
             comments: true,
           },
+        },
+        likes: {
+          where: {
+            userId: req.user.id,
+          },
+          select: { id: true },
         },
         postedAt: true,
         comments: {
@@ -141,6 +148,14 @@ module.exports = {
       take: 20 * parseInt(req.query.page),
     });
 
-    res.json({ success: true, posts });
+    // Add info on if the user has liked
+    const resultPosts = posts.map((post) => {
+      return {
+        ...post,
+        isLiked: post.likes.length > 0 ? true : false,
+      };
+    });
+
+    res.json({ success: true, posts: resultPosts });
   },
 };

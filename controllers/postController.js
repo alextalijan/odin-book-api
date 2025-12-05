@@ -16,7 +16,7 @@ module.exports = {
     // Check if the user has already liked the post
     const like = await prisma.like.findFirst({
       where: {
-        userID: req.user.id,
+        userId: req.user.id,
         postId: req.params.postId,
       },
     });
@@ -27,7 +27,7 @@ module.exports = {
     // Send a like
     await prisma.like.create({
       data: {
-        userID: req.user.id,
+        userId: req.user.id,
         postId: req.params.postId,
       },
     });
@@ -38,7 +38,7 @@ module.exports = {
     // Check if the like exists
     const like = await prisma.like.findFirst({
       where: {
-        userID: req.user.id,
+        userId: req.user.id,
         postId: req.params.postId,
       },
     });
@@ -51,9 +51,9 @@ module.exports = {
 
     // Remove the like
     try {
-      await prisma.like.delete({
+      await prisma.like.deleteMany({
         where: {
-          userID: req.user.id,
+          userId: req.user.id,
           postId: req.params.postId,
         },
       });
