@@ -104,7 +104,7 @@ module.exports = {
       orderBy: {
         commentedAt: 'desc',
       },
-      take: req.query.pageNum * 10,
+      take: parseInt(req.query.pageNum) * 10,
     });
 
     return res.json({ success: true, comments });
