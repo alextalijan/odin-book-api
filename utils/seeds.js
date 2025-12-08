@@ -57,7 +57,7 @@ async function main() {
         data: {
           text: `This is a random comment number ${i}`,
           postId: post.id,
-          authorId: i < 4 ? users[i].id : alex.id,
+          authorId: alex.id,
         },
       });
     }

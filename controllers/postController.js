@@ -17,21 +17,6 @@ module.exports = {
             username: true,
           },
         },
-        comments: {
-          select: {
-            id: true,
-            text: true,
-            author: {
-              select: {
-                username: true,
-              },
-            },
-            commentedAt: true,
-          },
-          orderBy: {
-            commentedAt: 'desc',
-          },
-        },
         _count: {
           select: {
             likes: true,
@@ -72,6 +57,57 @@ module.exports = {
 
     // Return the post details
     res.json({ success: true, post: postInfo });
+  },
+  getComments: async (req, res) => {
+    // Fetch the post to see if it exists
+    const post = await prisma.post.findUnique({
+      where: {
+        id: req.params.postId,
+      },
+      select: {
+        authorId: true,
+      },
+    });
+    if (!post) {
+      return res.json({ success: true, message: 'Post does not exist.' });
+    }
+
+    // Check if the user follows the author of this post
+    const followings = await prisma.following.findMany({
+      where: {
+        followerId: req.user.id,
+        followedId: post.authorId,
+      },
+    });
+    if (followings.length === 0) {
+      return res.json({
+        success: false,
+        message: 'You do not follow this person.',
+      });
+    }
+
+    // Fetch the comments of the post
+    const comments = await prisma.comment.findMany({
+      where: {
+        postId: req.params.postId,
+      },
+      select: {
+        id: true,
+        text: true,
+        author: {
+          select: {
+            username: true,
+          },
+        },
+        commentedAt: true,
+      },
+      orderBy: {
+        commentedAt: 'desc',
+      },
+      take: req.query.pageNum * 10,
+    });
+
+    return res.json({ success: true, comments });
   },
   likePost: async (req, res) => {
     // Check if the post exists
