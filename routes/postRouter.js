@@ -7,6 +7,7 @@ const controller = require('../controllers/postController');
 
 router.get('/:postId', authenticateToken, controller.getPost);
 router.get('/:postId/comments', authenticateToken, controller.getComments);
+router.post('/:postId/comments', authenticateToken, controller.sendComment);
 router.post('/:postId/likes', authenticateToken, controller.likePost);
 router.delete('/:postId/likes', authenticateToken, controller.unlikePost);
 

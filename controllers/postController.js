@@ -109,6 +109,50 @@ module.exports = {
 
     return res.json({ success: true, comments });
   },
+  sendComment: async (req, res) => {
+    // Check if the comment is empty
+    if (req.body.comment === '') {
+      return res.json({
+        success: false,
+        message: 'Cannot send empty comment.',
+      });
+    }
+
+    // Check if the user follows the person who posted
+    const post = await prisma.post.findUnique({
+      where: {
+        id: req.params.postId,
+      },
+      select: {
+        id: true,
+        authorId: true,
+      },
+    });
+
+    const following = await prisma.following.findMany({
+      where: {
+        followedId: post.authorId,
+        followerId: req.user.id,
+      },
+    });
+    if (following.length === 0) {
+      return res.json({
+        success: false,
+        message: 'You are not following this person.',
+      });
+    }
+
+    // Send the comment
+    await prisma.comment.create({
+      data: {
+        text: req.body.comment,
+        authorId: req.user.id,
+        postId: req.params.postId,
+      },
+    });
+
+    res.json({ success: true, message: 'Comment sent.' });
+  },
   likePost: async (req, res) => {
     // Check if the post exists
     const post = await prisma.post.findUnique({

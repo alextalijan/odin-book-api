@@ -50,9 +50,8 @@ async function main() {
       },
     });
 
-    // Add fake comments
-    const numComments = Math.floor(Math.random() * 7);
-    for (let i = 0; i < numComments; i++) {
+    // Add 25 fake comments
+    for (let i = 0; i < 25; i++) {
       await prisma.comment.create({
         data: {
           text: `This is a random comment number ${i}`,
