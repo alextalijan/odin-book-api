@@ -15,6 +15,7 @@ module.exports = {
           select: {
             id: true,
             username: true,
+            hasAvatar: true,
           },
         },
         _count: {
