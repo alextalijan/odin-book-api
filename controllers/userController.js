@@ -129,6 +129,83 @@ module.exports = {
   returnUser: async (req, res) => {
     res.json({ success: true, user: req.user });
   },
+  getAccount: async (req, res) => {
+    let account;
+
+    // If the user requesting the account is the owner
+    if (req.params.username === req.user.username) {
+      // Return all sensitive info about the account
+      account = await prisma.user.findUnique({
+        where: {
+          username: req.params.username,
+        },
+        select: {
+          id: true,
+          username: true,
+          hasAvatar: true,
+          _count: {
+            following: true,
+            followers: true,
+            incomingRequests: true,
+          },
+        },
+      });
+    }
+    // Else less user info
+    else {
+      account = await prisma.user.findUnique({
+        where: {
+          username: req.params.username,
+        },
+        select: {
+          id: true,
+          username: true,
+          hasAvatar: true,
+          _count: {
+            following: true,
+            followers: true,
+          },
+          followers: {
+            select: {
+              followerId: true,
+            },
+          },
+        },
+      });
+
+      // Check if the account exists
+      if (!account) {
+        return res.json({ success: false, message: 'Account does not exist.' });
+      }
+
+      // Check if the user follows this account
+      for (const following of account.followers) {
+        if (following.followerId === req.user.id) {
+          account.isFollowed = true;
+          break;
+        }
+      }
+
+      // If the account isn't followed check if there's a pending request
+      if (!account.isFollowed) {
+        const [request] = await prisma.followRequest.findMany({
+          where: {
+            senderId: req.user.id,
+            receiverId: account.id,
+            status: 'pending',
+          },
+        });
+
+        // If the request exists, send
+        if (request) {
+          account.requestSent = true;
+        }
+      }
+    }
+
+    res.json({ success: true, account });
+  },
+  getAccountPosts: async (req, res) => {},
   getFeed: async (req, res) => {
     // Check if the user has access to these followings
     if (req.user.id !== req.params.userId) {

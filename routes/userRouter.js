@@ -8,6 +8,8 @@ const controller = require('../controllers/userController');
 router.post('/', controller.register);
 router.get('/search', authenticateToken, controller.findUser);
 router.get('/me', authenticateToken, controller.returnUser);
+router.get('/:username', authenticateToken, controller.getAccount);
+router.get('/:userId/posts', authenticateToken, controller.getAccountPosts);
 router.get('/:userId/feed', authenticateToken, controller.getFeed);
 router.delete('/:userId/followers', authenticateToken, controller.unfollowUser);
 router.post(
