@@ -98,6 +98,7 @@ module.exports = {
     const requests = await prisma.followRequest.findMany({
       where: {
         senderId: req.user.id,
+        status: 'pending',
       },
       select: {
         receiverId: true,
@@ -269,5 +270,40 @@ module.exports = {
     }
 
     res.json({ success: true, message: 'Follow request sent.' });
+  },
+  cancelRequest: async (req, res) => {
+    // Check if the request exists
+    const [request] = await prisma.followRequest.findMany({
+      where: {
+        senderId: req.user.id,
+        receiverId: req.params.userID,
+        status: 'pending',
+      },
+      select: {
+        id: true,
+      },
+    });
+    if (!request) {
+      return res.json({
+        success: false,
+        message: 'You have not sent a request.',
+      });
+    }
+
+    // Change the request status to cancelled
+    try {
+      await prisma.followRequest.update({
+        where: {
+          id: request.id,
+        },
+        data: {
+          status: 'canceled',
+        },
+      });
+    } catch (err) {
+      return res.json({ success: false, message: err.message });
+    }
+
+    res.json({ success: true, message: 'Request cancelled.' });
   },
 };

@@ -15,5 +15,10 @@ router.post(
   authenticateToken,
   controller.sendFollowRequest
 );
+router.put(
+  '/:userId/follow-requests',
+  authenticateToken,
+  controller.cancelRequest
+);
 
 module.exports = router;
