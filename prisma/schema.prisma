@@ -17,6 +17,7 @@ model User {
   id               String          @id @default(uuid())
   username         String          @unique
   hash             String
+  hasAvatar        Boolean         @default(false)
   following        Following[]     @relation("following")
   followers        Following[]     @relation("followed")
   sentRequests     FollowRequest[] @relation("sentRequest")
