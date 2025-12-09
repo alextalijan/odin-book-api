@@ -198,6 +198,35 @@ module.exports = {
 
     res.json({ success: true, posts: resultPosts });
   },
+  unfollowUser: async (req, res) => {
+    // Check if the user is even following the account
+    const following = await prisma.following.findMany({
+      where: {
+        followedId: req.params.userId,
+        followerId: req.user.id,
+      },
+    });
+    if (!following) {
+      return res.json({
+        success: false,
+        message: 'You are not following this person.',
+      });
+    }
+
+    // Remove the following
+    try {
+      await prisma.following.deleteMany({
+        where: {
+          followedId: req.params.userId,
+          followerId: req.user.id,
+        },
+      });
+    } catch (err) {
+      return res.json({ success: false, message: err.message });
+    }
+
+    res.json({ success: true, message: 'Unfollowed.' });
+  },
   sendFollowRequest: async (req, res) => {
     // Check if the user is already following
     const followings = await prisma.following.findMany({
