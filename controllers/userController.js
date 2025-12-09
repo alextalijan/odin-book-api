@@ -94,11 +94,25 @@ module.exports = {
       take: 10,
     });
 
+    // Get the list of follow requests of this user
+    const requests = await prisma.followRequest.findMany({
+      where: {
+        senderId: req.user.id,
+      },
+      select: {
+        receiverId: true,
+      },
+    });
+
     // Check for every single user if the requester follows them
     for (const user of users) {
-      // Check if the user
-
-      user.isFollowed = false;
+      // Check if the user sent the request to this one
+      for (const request of requests) {
+        if (request.receiverId === user.id) {
+          user.requestSent = true;
+          break;
+        }
+      }
 
       for (const following of user.followers) {
         if (following.followerId === req.user.id) {
