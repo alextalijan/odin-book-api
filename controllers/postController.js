@@ -97,7 +97,9 @@ module.exports = {
         text: true,
         author: {
           select: {
+            id: true,
             username: true,
+            hasAvatar: true,
           },
         },
         commentedAt: true,
