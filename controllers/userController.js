@@ -70,6 +70,46 @@ module.exports = {
 
     res.json({ success: true, user: registeredUser });
   },
+  findUser: async (req, res) => {
+    // Find the 10 users containing the search query
+    const users = await prisma.user.findMany({
+      where: {
+        id: {
+          not: req.user.id,
+        },
+        username: {
+          contains: req.query.username.trim().toLowerCase(),
+          mode: 'insensitive',
+        },
+      },
+      select: {
+        id: true,
+        username: true,
+        followers: {
+          select: {
+            followerId: true,
+          },
+        },
+      },
+      take: 10,
+    });
+
+    // Check for every single user if the requester follows them
+    for (const user of users) {
+      // Check if the user
+
+      user.isFollowed = false;
+
+      for (const following of user.followers) {
+        if (following.followerId === req.user.id) {
+          user.isFollowed = true;
+          break;
+        }
+      }
+    }
+
+    res.json({ success: true, users });
+  },
   returnUser: async (req, res) => {
     res.json({ success: true, user: req.user });
   },
@@ -157,5 +197,34 @@ module.exports = {
     });
 
     res.json({ success: true, posts: resultPosts });
+  },
+  sendFollowRequest: async (req, res) => {
+    // Check if the user is already following
+    const followings = await prisma.following.findMany({
+      where: {
+        followedId: req.params.userId,
+        followerId: req.user.id,
+      },
+    });
+    if (followings.length > 0) {
+      return res.json({
+        success: false,
+        message: 'You are already following this person.',
+      });
+    }
+
+    // Send the follow request
+    try {
+      await prisma.followRequest.create({
+        data: {
+          senderId: req.user.id,
+          receiverId: req.params.userId,
+        },
+      });
+    } catch (err) {
+      return res.json({ success: false, message: err.message });
+    }
+
+    res.json({ success: true, message: 'Follow request sent.' });
   },
 };
