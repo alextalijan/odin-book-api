@@ -209,7 +209,83 @@ module.exports = {
 
     res.json({ success: true, account });
   },
-  getAccountPosts: async (req, res) => {},
+  getAccountPosts: async (req, res) => {
+    // Check if the user has access to these posts
+    const [following] = await prisma.following.findMany({
+      where: {
+        followedId: req.params.userId,
+        followerId: req.user.id,
+      },
+    });
+
+    // User either follows or is the owner of the account
+    if (!following && req.params.userId !== req.user.id) {
+      return res.json({
+        success: false,
+        message: 'You do not have access to these posts.',
+      });
+    }
+
+    // Get posts
+    const posts = await prisma.post.findMany({
+      where: {
+        authorId: req.params.userId,
+      },
+      select: {
+        id: true,
+        text: true,
+        author: {
+          select: {
+            id: true,
+            username: true,
+            hasAvatar: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+        likes: {
+          where: {
+            userId: req.user.id,
+          },
+          select: { id: true },
+        },
+        postedAt: true,
+        comments: {
+          select: {
+            id: true,
+            text: true,
+            author: {
+              select: {
+                username: true,
+              },
+            },
+          },
+          orderBy: {
+            commentedAt: 'desc',
+          },
+          take: 3,
+        },
+      },
+      orderBy: {
+        postedAt: 'desc',
+      },
+      take: 10 * parseInt(req.query.page),
+    });
+
+    // Add info on if the user has liked
+    const resultPosts = posts.map((post) => {
+      return {
+        ...post,
+        isLiked: post.likes.length > 0 ? true : false,
+      };
+    });
+
+    res.json({ success: true, posts: resultPosts });
+  },
   getFeed: async (req, res) => {
     // Check if the user has access to these followings
     if (req.user.id !== req.params.userId) {
