@@ -144,9 +144,11 @@ module.exports = {
           username: true,
           hasAvatar: true,
           _count: {
-            following: true,
-            followers: true,
-            incomingRequests: true,
+            select: {
+              following: true,
+              followers: true,
+              incomingRequests: true,
+            },
           },
         },
       });
@@ -162,8 +164,10 @@ module.exports = {
           username: true,
           hasAvatar: true,
           _count: {
-            following: true,
-            followers: true,
+            select: {
+              following: true,
+              followers: true,
+            },
           },
           followers: {
             select: {
