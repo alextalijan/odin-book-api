@@ -155,9 +155,12 @@ module.exports = {
     }
     // Else less user info
     else {
-      account = await prisma.user.findUnique({
+      account = await prisma.user.findFirst({
         where: {
-          username: req.params.username,
+          username: {
+            equals: req.params.username,
+            mode: 'insensitive',
+          },
         },
         select: {
           id: true,
