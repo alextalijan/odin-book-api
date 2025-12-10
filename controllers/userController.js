@@ -148,6 +148,7 @@ module.exports = {
               following: true,
               followers: true,
               incomingRequests: true,
+              posts: true,
             },
           },
         },
@@ -170,6 +171,7 @@ module.exports = {
             select: {
               following: true,
               followers: true,
+              posts: true,
             },
           },
           followers: {
