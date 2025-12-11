@@ -405,7 +405,6 @@ module.exports = {
 
     // Check if the user is in the followers
     for (const following of followings) {
-      console.log(following);
       if (following.follower.id === req.user.id) {
         return res.json({ success: true, followers });
       }
@@ -445,6 +444,50 @@ module.exports = {
     }
 
     res.json({ success: true, message: 'Unfollowed.' });
+  },
+  getFollowings: async (req, res) => {
+    // Fetch the followings
+    const followings = await prisma.following.findMany({
+      where: {
+        followerId: req.params.userId,
+      },
+      select: {
+        followed: {
+          select: {
+            id: true,
+            username: true,
+            hasAvatar: true,
+          },
+        },
+        follower: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    // Filter out following information
+    const followerIds = followings.map((following) => following.follower.id);
+    const followingsList = followings.map((following) => following.followed);
+
+    // Check if the user is the owner of account
+    if (req.user.id === req.params.userId) {
+      return res.json({ success: true, followings: followingsList });
+    }
+
+    // Check if the user is in the followers
+    for (const id of followerIds) {
+      if (id === req.user.id) {
+        return res.json({ success: true, followings: followingsList });
+      }
+    }
+
+    // The user isn't a follower
+    res.json({
+      success: false,
+      message: 'Not authorized to see followings of this account.',
+    });
   },
   sendFollowRequest: async (req, res) => {
     // Check if the user is already following
