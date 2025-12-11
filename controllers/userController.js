@@ -553,7 +553,7 @@ module.exports = {
     const [request] = await prisma.followRequest.findMany({
       where: {
         senderId: req.user.id,
-        receiverId: req.params.userID,
+        receiverId: req.params.userId,
         status: 'pending',
       },
       select: {
