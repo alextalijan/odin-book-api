@@ -379,7 +379,7 @@ module.exports = {
     res.json({ success: true, posts: resultPosts });
   },
   getFollowers: async (req, res) => {
-    // Fetch the followers
+    // Fetch the followers of this account
     const followings = await prisma.following.findMany({
       where: {
         followedId: req.params.userId,
@@ -390,6 +390,11 @@ module.exports = {
             id: true,
             username: true,
             hasAvatar: true,
+            followers: {
+              select: {
+                followerId: true,
+              },
+            },
           },
         },
       },
@@ -397,6 +402,29 @@ module.exports = {
 
     // Filter out followers information
     const followers = followings.map((following) => following.follower);
+
+    // Check for each user if request from the requesting user exists
+    for (const follower of followers) {
+      const request = await prisma.followRequest.findFirst({
+        where: {
+          status: 'pending',
+          receiverId: req.params.userId,
+          senderId: req.user.id,
+        },
+      });
+
+      if (request) {
+        follower.requestSent = true;
+      } else {
+        // Else check if the user is following this account
+        for (const f of follower.followers) {
+          if (f.followerId === req.user.id) {
+            follower.isFollowed = true;
+            break;
+          }
+        }
+      }
+    }
 
     // Check if the user is the owner of account
     if (req.user.id === req.params.userId) {
@@ -469,7 +497,9 @@ module.exports = {
 
     // Filter out following information
     const followerIds = followings.map((following) => following.follower.id);
-    const followingsList = followings.map((following) => following.followed);
+    const followingsList = followings.map((following) => {
+      return { ...following.followed, isFollowed: true };
+    });
 
     // Check if the user is the owner of account
     if (req.user.id === req.params.userId) {
