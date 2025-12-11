@@ -552,6 +552,38 @@ module.exports = {
       message: 'Not authorized to see followings of this account.',
     });
   },
+  getRequests: async (req, res) => {
+    // Check if the user is the one requesting the list
+    if (req.user.id !== req.params.userId) {
+      return res.json({
+        success: false,
+        message: 'Not authorized to see follow requests.',
+      });
+    }
+
+    // Get all the active requests
+    const requests = await prisma.followRequest.findMany({
+      where: {
+        receiverId: req.params.userId,
+        status: 'pending',
+      },
+      select: {
+        id: true,
+        sender: {
+          select: {
+            id: true,
+            username: true,
+            hasAvatar: true,
+          },
+        },
+      },
+      orderBy: {
+        sentAt: 'desc',
+      },
+    });
+
+    res.json({ success: true, requests });
+  },
   sendFollowRequest: async (req, res) => {
     // Check if the user is the user himself
     if (req.user.id === req.params.userId) {
