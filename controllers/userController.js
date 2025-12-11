@@ -408,7 +408,7 @@ module.exports = {
       const request = await prisma.followRequest.findFirst({
         where: {
           status: 'pending',
-          receiverId: req.params.userId,
+          receiverId: follower.id,
           senderId: req.user.id,
         },
       });
