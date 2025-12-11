@@ -475,7 +475,7 @@ module.exports = {
   },
   getFollowings: async (req, res) => {
     // Fetch the followings
-    const followings = await prisma.following.findMany({
+    const accountFollowings = await prisma.following.findMany({
       where: {
         followerId: req.params.userId,
       },
@@ -485,31 +485,64 @@ module.exports = {
             id: true,
             username: true,
             hasAvatar: true,
-          },
-        },
-        follower: {
-          select: {
-            id: true,
+            followers: {
+              select: {
+                followerId: true,
+              },
+            },
           },
         },
       },
     });
 
-    // Filter out following information
-    const followerIds = followings.map((following) => following.follower.id);
-    const followingsList = followings.map((following) => {
-      return { ...following.followed, isFollowed: true };
+    // Fetch the followers of this account
+    const accountFollowers = await prisma.following.findMany({
+      where: {
+        followedId: req.params.userId,
+      },
+      select: {
+        followerId: true,
+      },
     });
+
+    // Filter out following information
+    const followerIds = accountFollowers.map((follower) => follower.followerId);
+    const followings = accountFollowings.map((following) => following.followed);
+
+    for (const following of followings) {
+      // Check if the user has sent a request
+      const request = await prisma.followRequest.findFirst({
+        where: {
+          senderId: req.user.id,
+          receiverId: following.id,
+          status: 'pending',
+        },
+      });
+
+      // If a request exists
+      if (request) {
+        // include that information
+        following.requestSent = true;
+      } else {
+        // Else check if the user is following this account
+        for (const f of following.followers) {
+          if (f.followerId === req.user.id) {
+            following.isFollowed = true;
+            break;
+          }
+        }
+      }
+    }
 
     // Check if the user is the owner of account
     if (req.user.id === req.params.userId) {
-      return res.json({ success: true, followings: followingsList });
+      return res.json({ success: true, followings });
     }
 
     // Check if the user is in the followers
     for (const id of followerIds) {
       if (id === req.user.id) {
-        return res.json({ success: true, followings: followingsList });
+        return res.json({ success: true, followings });
       }
     }
 
