@@ -11,6 +11,7 @@ router.get('/me', authenticateToken, controller.returnUser);
 router.get('/:username', authenticateToken, controller.getAccount);
 router.get('/:userId/posts', authenticateToken, controller.getAccountPosts);
 router.get('/:userId/feed', authenticateToken, controller.getFeed);
+router.get('/:userId/followers', authenticateToken, controller.getFollowers);
 router.delete('/:userId/followers', authenticateToken, controller.unfollowUser);
 router.post(
   '/:userId/follow-requests',

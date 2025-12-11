@@ -22,7 +22,7 @@ async function main() {
     },
   });
 
-  // Create 5 fake users
+  // Create 15 fake users
   const users = faker.helpers.multiple(createRandomUser, {
     count: 5,
   });
@@ -50,20 +50,14 @@ async function main() {
       },
     });
 
-    // Add 25 fake comments
-    for (let i = 0; i < 25; i++) {
-      await prisma.comment.create({
-        data: {
-          text: `This is a random comment number ${i}`,
-          postId: post.id,
-          authorId: alex.id,
-        },
-      });
-    }
-
     // Set alex to follow them
     await prisma.following.create({
       data: { followedId: user.id, followerId: alex.id },
+    });
+
+    // Set them to follow alex
+    await prisma.following.create({
+      data: { followedId: alex.id, followerId: user.id },
     });
   }
 }
