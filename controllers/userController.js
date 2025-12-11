@@ -520,6 +520,14 @@ module.exports = {
     });
   },
   sendFollowRequest: async (req, res) => {
+    // Check if the user is the user himself
+    if (req.user.id === req.params.userId) {
+      return res.json({
+        success: false,
+        message: 'Cannot send a request to yourself.',
+      });
+    }
+
     // Check if the user is already following
     const followings = await prisma.following.findMany({
       where: {
