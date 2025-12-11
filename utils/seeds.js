@@ -55,9 +55,9 @@ async function main() {
       data: { followedId: user.id, followerId: alex.id },
     });
 
-    // Set them to follow alex
-    await prisma.following.create({
-      data: { followedId: alex.id, followerId: user.id },
+    // Send follow requests to alex
+    await prisma.followRequest.create({
+      data: { receiverId: alex.id, senderId: user.id },
     });
   }
 }
