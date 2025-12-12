@@ -35,7 +35,7 @@ module.exports = {
     }
 
     // Deal with the request accordingly
-    const [possibleResponses] = ['accepted', 'rejected'];
+    const possibleResponses = ['accepted', 'rejected'];
     if (!possibleResponses.includes(req.body.response)) {
       return res.json({
         success: false,
