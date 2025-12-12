@@ -147,7 +147,11 @@ module.exports = {
             select: {
               following: true,
               followers: true,
-              incomingRequests: true,
+              incomingRequests: {
+                where: {
+                  status: 'pending',
+                },
+              },
               posts: true,
             },
           },
