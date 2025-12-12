@@ -5,6 +5,7 @@ const authenticateToken = require('../utils/authenticateToken');
 // Import controller
 const controller = require('../controllers/postController');
 
+router.post('/', authenticateToken, controller.post);
 router.get('/:postId', authenticateToken, controller.getPost);
 router.get('/:postId/comments', authenticateToken, controller.getComments);
 router.post('/:postId/comments', authenticateToken, controller.sendComment);

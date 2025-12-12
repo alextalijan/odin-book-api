@@ -2,6 +2,25 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 module.exports = {
+  post: async (req, res) => {
+    // Check if the content is empty
+    if (req.body.content === '') {
+      return res.json({
+        success: false,
+        message: 'Cannot post an empty post.',
+      });
+    }
+
+    // Send post to the database
+    await prisma.post.create({
+      data: {
+        text: req.body.content,
+        authorId: req.user.id,
+      },
+    });
+
+    res.json({ success: true, message: 'Posted' });
+  },
   getPost: async (req, res) => {
     // Fetch the post and check if it exists
     const post = await prisma.post.findUnique({
