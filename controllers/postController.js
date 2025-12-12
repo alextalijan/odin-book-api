@@ -157,7 +157,8 @@ module.exports = {
         followerId: req.user.id,
       },
     });
-    if (following.length === 0) {
+    // If the user is not following or is not the author, don't send the comment
+    if (following.length === 0 && req.user.id !== post.authorId) {
       return res.json({
         success: false,
         message: 'You are not following this person.',
