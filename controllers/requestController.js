@@ -52,6 +52,23 @@ module.exports = {
       },
     });
 
+    // If the request was accepted, add the follower to user
+    if (req.body.response) {
+      try {
+        await prisma.following.create({
+          data: {
+            followerId: request.senderId,
+            followedId: request.receiverId,
+          },
+        });
+      } catch (err) {
+        return res.json({
+          success: false,
+          message: 'Error adding the request sender to followers.',
+        });
+      }
+    }
+
     res.json({ success: true, response: req.body.response });
   },
 };
