@@ -55,14 +55,14 @@ module.exports = {
       return res.json({ success: false, message: 'Post not found.' });
     }
 
-    // Check if the user follows the author of this post
+    // Check if the user follows the author of this post or is the author
     const followings = await prisma.following.findMany({
       where: {
         followerId: req.user.id,
         followedId: post.author.id,
       },
     });
-    if (followings.length === 0) {
+    if (followings.length === 0 && req.user.id !== post.author.id) {
       return res.json({
         success: false,
         message: 'You do not follow this person.',
@@ -92,14 +92,14 @@ module.exports = {
       return res.json({ success: true, message: 'Post does not exist.' });
     }
 
-    // Check if the user follows the author of this post
+    // Check if the user follows the author of this post or is the author
     const followings = await prisma.following.findMany({
       where: {
         followerId: req.user.id,
         followedId: post.authorId,
       },
     });
-    if (followings.length === 0) {
+    if (followings.length === 0 && req.user.id !== post.authorId) {
       return res.json({
         success: false,
         message: 'You do not follow this person.',
