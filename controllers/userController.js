@@ -660,4 +660,37 @@ module.exports = {
 
     res.json({ success: true, message: 'Request cancelled.' });
   },
+  changeAvatar: async (req, res) => {
+    // Check if the user is authorized to change their avatar
+    if (req.user.id !== req.params.userId) {
+      return res.json({
+        success: false,
+        message: 'Not authorized to change avatar.',
+      });
+    }
+
+    const possibleActions = ['change', 'remove'];
+
+    // If the action is not acceptable, return error
+    if (!possibleActions.includes(req.body.action)) {
+      return res.json({
+        success: false,
+        message: 'This action is not possible.',
+      });
+    }
+
+    // If the action is remove, remove the avatar
+    if (req.body.action === 'remove') {
+      await prisma.user.update({
+        where: {
+          id: req.params.userId,
+        },
+        data: {
+          hasAvatar: false,
+        },
+      });
+    }
+
+    res.json({ success: true, message: 'Avatar updated.' });
+  },
 };

@@ -29,5 +29,6 @@ router.put(
   authenticateToken,
   controller.cancelRequest
 );
+router.put('/:userId/avatar', authenticateToken, controller.changeAvatar);
 
 module.exports = router;
