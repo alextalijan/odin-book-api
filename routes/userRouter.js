@@ -1,9 +1,13 @@
 const { Router } = require('express');
 const router = Router();
 const authenticateToken = require('../utils/authenticateToken');
+const multer = require('multer');
 
 // Import controller
 const controller = require('../controllers/userController');
+
+// Set up multer storage for files
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/', controller.register);
 router.get('/search', authenticateToken, controller.findUser);
@@ -29,6 +33,11 @@ router.put(
   authenticateToken,
   controller.cancelRequest
 );
-router.put('/:userId/avatar', authenticateToken, controller.changeAvatar);
+router.put(
+  '/:userId/avatar',
+  authenticateToken,
+  upload.single('avatar'),
+  controller.changeAvatar
+);
 
 module.exports = router;
