@@ -1,5 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const sharp = require('sharp');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 
 module.exports = {
   post: async (req, res) => {
@@ -11,11 +13,60 @@ module.exports = {
       });
     }
 
+    // Create a uuid for the post
+    const postId = crypto.randomUUID();
+
+    // If a picture is included
+    if (req.file) {
+      // Set up the S3 client for sending requests to bucket
+      const s3 = new S3Client({
+        region: process.env.AWS_REGION,
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        },
+      });
+
+      // If the picture is not png or jpeg, return error
+      if (!['image/jpeg', 'image/png'].includes(req.file.mimetype)) {
+        return res.json({
+          success: false,
+          message: 'Posts can only include jpg and png images.',
+        });
+      }
+
+      // If the picture is png
+      if (req.file.mimetype === 'image/png') {
+        // Convert the picture into jpeg
+        req.file.buffer = await sharp(req.file.buffer)
+          .flatten({
+            background: '#ffffff',
+          })
+          .toBuffer();
+      }
+
+      // Upload the image to storage
+      try {
+        await s3.send(
+          new PutObjectCommand({
+            Bucket: 'odin-book-storage',
+            Key: `posts/${postId}.jpg`,
+            Body: req.file.buffer,
+            ContentType: 'image/jpeg',
+          })
+        );
+      } catch (err) {
+        return res.json({ success: false, message: err.message });
+      }
+    }
+
     // Send post to the database
     await prisma.post.create({
       data: {
+        id: postId,
         text: req.body.content,
         authorId: req.user.id,
+        containsImage: req.file ? true : false,
       },
     });
 
