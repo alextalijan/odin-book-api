@@ -8,7 +8,7 @@ const PORT = 3000;
 // Set up cors
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: 'https://odin-book-frontend-alpha.vercel.app/',
     credentials: true,
   })
 );
