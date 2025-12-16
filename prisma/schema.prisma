@@ -53,13 +53,14 @@ model FollowRequest {
 }
 
 model Post {
-  id       String    @id @default(uuid())
-  text     String
-  author   User      @relation("ownPosts", fields: [authorId], references: [id])
-  authorId String
-  likes    Like[]
-  comments Comment[]
-  postedAt DateTime  @default(now())
+  id            String    @id @default(uuid())
+  text          String
+  author        User      @relation("ownPosts", fields: [authorId], references: [id])
+  authorId      String
+  containsImage Boolean   @default(false)
+  likes         Like[]
+  comments      Comment[]
+  postedAt      DateTime  @default(now())
 }
 
 model Like {
