@@ -88,6 +88,7 @@ module.exports = {
             hasAvatar: true,
           },
         },
+        containsImage: true,
         _count: {
           select: {
             likes: true,
