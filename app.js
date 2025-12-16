@@ -31,6 +31,11 @@ app.use('/users', userRouter);
 app.use('/posts', postRouter);
 app.use('/requests', requestRouter);
 
+// Set up the not found route
+app.use((req, res) => {
+  res.status(404).json({ message: 'API route does not exist' });
+});
+
 app.listen(PORT, (err) => {
   if (err) {
     return console.error(err);
