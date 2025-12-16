@@ -3,6 +3,12 @@ const prisma = new PrismaClient();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const sharp = require('sharp');
+const {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} = require('@aws-sdk/client-s3');
 
 module.exports = {
   register: async (req, res) => {
@@ -669,6 +675,11 @@ module.exports = {
       });
     }
 
+    // Check if the file exists
+    if (!req.file && req.body.action === 'change') {
+      return res.json({ success: false, message: 'File does not exist.' });
+    }
+
     const possibleActions = ['change', 'remove'];
 
     // If the action is not acceptable, return error
@@ -679,8 +690,28 @@ module.exports = {
       });
     }
 
+    // Set up the S3 client for sending requests to bucket
+    const s3 = new S3Client({
+      region: process.env.AWS_REGION,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      },
+    });
+
     // If the action is remove, remove the avatar
     if (req.body.action === 'remove') {
+      try {
+        await s3.send(
+          new DeleteObjectCommand({
+            Bucket: 'odin-book-storage',
+            Key: `avatars/${req.params.userId}.jpg`,
+          })
+        );
+      } catch (err) {
+        return res.json({ success: false, message: err.message });
+      }
+
       await prisma.user.update({
         where: {
           id: req.params.userId,
@@ -689,6 +720,47 @@ module.exports = {
           hasAvatar: false,
         },
       });
+    } else {
+      // Else the user wants to update the avatar
+      // If the user hasn't sent a jpeg
+      if (req.file.mimetype !== 'image/jpeg') {
+        // Check if it's png
+        if (req.file.mimetype !== 'image/png') {
+          return res.json({
+            success: false,
+            message: 'You can only set a jpg or png image as avatar.',
+          });
+        }
+
+        // Convert the image into jpeg
+        req.file.buffer = await sharp(req.file.buffer)
+          .flatten({
+            background: '#ffffff',
+          })
+          .toBuffer();
+      }
+
+      try {
+        await s3.send(
+          new PutObjectCommand({
+            Bucket: 'odin-book-storage',
+            Key: `avatars/${req.params.userId}.jpg`,
+            Body: req.file.buffer,
+            ContentType: 'image/jpeg',
+          })
+        );
+
+        await prisma.user.update({
+          where: {
+            id: req.params.userId,
+          },
+          data: {
+            hasAvatar: true,
+          },
+        });
+      } catch (err) {
+        return res.json({ success: false, message: err.message });
+      }
     }
 
     res.json({ success: true, message: 'Avatar updated.' });
